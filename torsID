@@ -1,0 +1,21 @@
+# annovar to convert to rsIDs
+# download dbsnp150
+perl annotate_variation.pl -buildver hg19 -downdb snp150 humandb/
+# to rsID
+perl annotate_variation.pl test.txt humandb/ -filter -build hg19 -dbtype avsnp150
+# reference dbSNP version
+# ucsc web to get db155 version: https://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg38&g=dbSnp155Composite
+
+
+# format modification
+# convert .bed file into txt
+cut -f 1,2,4 data.bed > output.txt
+# delete all comma
+sed 's/,//g' input.txt > output.txt
+# change the column order
+awk 'BEGIN{OFS="\t"} {print $1,$2,$3,$5,$6,$4}' hg19_avsnp155.txt > output.txt
+
+# connect terminal to rstudio
+ssh wenhua@172.21.49.54
+# wd: /mnt/md0/rstudio/wenhua
+
