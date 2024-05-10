@@ -1,0 +1,4 @@
+# example
+%%bash
+# clump p1 0.05, r2 0.05, kb 250
+./plink2 --bfile g1000_eur --no-psam-pheno --clump SZ_overlap_2.txt --clump-p1 0.05 --clump-r2 0.05 --clump-kb 250 --clump-id-field ID --clump-p-field PVAL --out clumped1
