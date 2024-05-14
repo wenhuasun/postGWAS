@@ -1,0 +1,8 @@
+# install snpflip
+pip2 install snpflip
+# download reference genome 
+wget http://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/human_g1k_v37.fasta.gz
+gunzip human_g1k_v37.fasta.gz
+# result
+snpflip -b SZ.bim -f human_g1k_v37.fasta -o sz_strandflip
+# https://github.com/biocore-ntnu/snpflip
