@@ -1,0 +1,9 @@
+# divide one column into 2
+# separate snp column
+PD_nors <- separate(PD_nors, SNP, into = c("CHROM", "POS"), sep = ":")
+
+# delete "chr"
+PD_bim$CHROM <- gsub("chr", "", PD_bim$CHROM)
+
+# Write the data frame to a .bim file
+write.table(PD_bim, file = "/data/wenhua/dat1/PD.bim", quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
