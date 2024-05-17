@@ -1,4 +1,6 @@
 # example
 %%bash
 # clump p1 0.05, r2 0.05, kb 250
-./plink2 --bfile g1000_eur --no-psam-pheno --clump SZ_overlap_2.txt --clump-p1 0.05 --clump-r2 0.05 --clump-kb 250 --clump-id-field ID --clump-p-field PVAL --out clumped1
+./plink2 --bfile g1000_eur --no-psam-pheno --clump PD_SZ_chrposa1_noflip.txt --clump-p1 1 --clump-r2 0.1 --clump-kb 1000000 --clump-id-field SNP --clump-p-field PVAL --out clumped_PD_SZ_chrposa1_noflip
+# delete all double quotation marks
+sed -i 's/"//g' PD_SZ_chrposa1_noflip.txt  
