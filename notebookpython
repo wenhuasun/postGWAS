@@ -1,0 +1,3 @@
+# show max or min rows in python
+pd.set_option('display.max_rows', 10)
+pd.set_option('display.max_rows', None)
