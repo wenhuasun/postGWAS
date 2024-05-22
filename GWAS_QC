@@ -1,0 +1,31 @@
+# https://neurogenomics.github.io/MungeSumstats/articles/MungeSumstats.html#overview
+# https://bioconductor.org/packages/release/data/annotation/html/SNPlocs.Hsapiens.dbSNP155.GRCh37.html
+# install package MungeSumstats
+if (!require("BiocManager")) install.packages("BiocManager")
+BiocManager::install("MungeSumstats")
+
+# load package
+library(MungeSumstats)
+
+# reference genome
+options(timeout = 3000)
+BiocManager::install("SNPlocs.Hsapiens.dbSNP155.GRCh37")
+BiocManager::install("BSgenome.Hsapiens.1000genomes.hs37d5", force = TRUE)
+# manually
+download.file("https://bioconductor.org/packages/3.18/data/annotation/src/contrib/SNPlocs.Hsapiens.dbSNP155.GRCh37_0.99.24.tar.gz",
+              destfile = "SNPlocs.Hsapiens.dbSNP155.GRCh37_0.99.24.tar.gz")
+install.packages("SNPlocs.Hsapiens.dbSNP155.GRCh37_0.99.24.tar.gz", repos = NULL, type = "source")
+download.file("https://bioconductor.org/packages/BSgenome.Hsapiens.1000genomes.hs37d5/",
+              destfile = "BSgenome.Hsapiens.1000genomes.hs37d5_0.99.1.tar.gz")
+install.packages("BSgenome.Hsapiens.1000genomes.hs37d5_0.99.1.tar.gz", repos = NULL, type = "source")
+install.packages("BSgenome.Hsapiens.1000genomes.hs37d5_1.4.3.tar.gz", repos = NULL, type = "source")
+
+# get cleaned file of PD
+reformatted <- 
+  MungeSumstats::format_sumstats(path = "/data/wenhua/dat/nallsEtAl2019_excluding23andMe_allVariants.tab",
+                                 ref_genome="GRCh37")
+
+# read output
+reformatted_path <- "/tmp/Rtmp72gMcu/file185a2445a1b0e.tsv.gz"
+PD_clean <- read.table(reformatted_path, header = TRUE, sep = "\t")
+write.table(PD_clean, "/data/wenhua/dat1/PD_clean.txt", sep = "\t", row.names = FALSE, col.names = TRUE)
