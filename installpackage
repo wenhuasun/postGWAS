@@ -1,0 +1,7 @@
+plink1.9
+wget http://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20190304.zip 
+unzip -o plink_linux_x86_64_20190304.zip
+
+plink2
+wget http://s3.amazonaws.com/plink2-assets/plink2_linux_x86_64_latest.zip
+unzip -o plink2_linux_x86_64_latest.zip
