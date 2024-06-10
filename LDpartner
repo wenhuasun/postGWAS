@@ -1,5 +1,8 @@
 ./plink --bfile g1000_eur --r2 --ld-snp rs2240921 --ld-window-kb 1000000 --ld-window-r2 0.1 --out rs2240921
 
 # change space into /n(new line)
-sed 's/ /\n/g' test.r.ld > output_test.r.ld.txt
-
+tr ' ' '\n' < test.snp.ld > output_test.snp.ld.txt
+# gcta
+gcta64  --bfile test  --ld ld.snplist  --ld-wind 1000  --ld-sig 0.05  --out test
+# filter negative value
+awk '$2 >= 0' input.txt > filtered.txt
