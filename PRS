@@ -1,0 +1,10 @@
+# install PRSice
+
+# format file, remove quotation mark
+sed -i 's/"//g' SNPlist/list3.txt
+# look at file
+head SNPlist/list3.txt
+#invalid SNP ID
+Rscript PRSice.R --dir . --prsice ./PRSice_linux --base SNPlist/list3.txt --snp ID --A1 A1.x --A2 A2.x --stat BETA.x --beta --pvalue P.x --target Tuebingen_GWAS --thread 1 --binary-target T --clump-kb 1000000 --clump-r2 0.1 --clump-p 1 --cov Tuebingen_GWAS_COV --cov-col SEX,AGE,PC1,PC2,PC3,PC4 --print-snp --prevalence 0.005 --fastscore --bar-levels 0.05 --out list3
+#PRS calculation
+Rscript PRSice.R --dir . --prsice ./PRSice_linux --base SNPlist/list3.txt --snp ID --A1 A1.x --A2 A2.x --stat BETA.x --beta --pvalue P.x --target Tuebingen_GWAS --thread 1 --binary-target T --clump-kb 1000000 --clump-r2 0.1 --clump-p 1 --cov Tuebingen_GWAS_COV --cov-col SEX,AGE,PC1,PC2,PC3,PC4 --print-snp --prevalence 0.005 --fastscore --bar-levels 0.05 --extract list3.valid --out list3
