@@ -1,7 +1,8 @@
 # install PRSice
 
-# format file, remove quotation mark
+# format file, remove quotation mark(linux version)
 sed -i 's/"//g' SNPlist/list3.txt
+sed -i '' 's/"//g' SNPlist/list1_rsID.txt(mac version)
 # look at file
 head SNPlist/list3.txt
 #invalid SNP ID
