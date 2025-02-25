@@ -1,0 +1,132 @@
+# How to get SNP list of each PRS
+---
+title: "SNPlist_rsID"
+author: "wenhua"
+date: "2024-12-10"
+output: html_document
+---
+
+set.seed(786)
+setwd("/data/wenhua/")
+.libPaths( c( "/data/Common_Folder/R/Single_cell_packages/", .libPaths()) )
+
+# install packages
+install.packages("tidyverse")
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+install.packages("data.table")
+library(data.table)
+
+# load PD GWAS summary statistics including 23andme data to make sure A1, A2, effect size are right direction
+PD_23andme <- fread("/data/wenhua/dat1/nallsEtAl2019_allSamples_allVariants_withRSID_GRCh37.tab", sep="\t")
+# prepocess PD GWAS file
+# select desired columns
+PD <- PD_23andme[, .(SNP, CHR, BP, A1, A2, b, p)]
+# rename "b" column "BETA"
+colnames(PD)[colnames(PD) == "b"] <- "BETA"
+# create chr:bp column
+PD[, chr_bp := paste(CHR, BP, sep = ":")]
+# create chr:bp:snp column
+# PD[, chr_bp_snp := paste(CHR, BP, SNP, sep = ":")]
+# duplicates <- PD[duplicated(PD$chr_bp_snp), ]
+
+# load SZ GWAS summary statistics dataset to make sure A1, A2, effect size are right direction
+# prepocess SZ GWAS file
+SZ <- fread("/data/wenhua/dat/PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv", sep="\t")
+# select desired columns
+SZ <- SZ[, .(ID, CHROM, POS, A1, A2, BETA, PVAL)]
+# rename  column name
+colnames(SZ)[colnames(SZ) == "ID"] <- "SNP"
+colnames(SZ)[colnames(SZ) == "CHROM"] <- "CHR"
+colnames(SZ)[colnames(SZ) == "POS"] <- "BP"
+colnames(SZ)[colnames(SZ) == "PVAL"] <- "P"
+# create chr:bp:snp column
+# SZ[, chr_bp_snp := paste(CHR, BP, SNP, sep = ":")]
+# duplicates <- SZ[duplicated(SZ$chr_bp_snp), ] make sure no duplicates
+
+# load overlap SNPs data(totally 4070160 SNPs) and replaced with PD
+overlap <- fread("/data/wenhua/dat1/PD_SZ_maf_23andme.txt", sep="\t")
+overlap <- overlap[, .(SNP, CHR.x, BP.x, A1.x, A2.x, BETA.x, P.x, A1.y, A2.y, BETA.y, P.y)]
+# replace CHR.x, BP.x, A1.x, A2.x, BETA.x, P.x column with PD column
+updated_overlap <- merge(overlap, PD, by = "SNP", suffixes = c(".old", ".new"))
+updated_overlap[, `:=`(
+  CHR.x = CHR,
+  BP.x = BP,
+  A1.x = A1,
+  A2.x = A2,
+  BETA.x = BETA,
+  P.x = p
+)]
+# remove additional columns
+overlap <- updated_overlap[, !c("CHR", "BP", "A1", "A2", "BETA", "p")]
+
+# replace with SZ
+# replace CHR.y, BP.y, A1.y, A2.y, BETA.y column with SZ column
+updated_overlap <- merge(overlap, SZ, by = "SNP", suffixes = c(".old", ".new"))
+updated_overlap[, `:=`(
+  A1.y = A1,
+  A2.y = A2,
+  BETA.y = BETA,
+  P.y = P
+)]
+# remove additional columns
+overlap <- updated_overlap[, !c("CHR", "BP", "A1", "A2", "BETA", "P")]
+
+# PRS7(SNP list for PRSpd_all and PRSsz_all)
+# add a new column chr:bp:a1:a2 4047284 SNPs
+overlap <- overlap %>%
+  mutate(ID = paste(CHR.x, BP.x, A1.x, A2.x, sep = ":"))
+# write to txt file 
+write.table(overlap, "/data/wenhua/dat1/list7_rsID.txt", sep = "\t", row.names = FALSE, col.names = TRUE)
+
+# list for split model 
+# PRS1(PD:+, SZ: +)
+list1 <- overlap %>%
+  filter(BETA.x > 0 & BETA.y > 0) %>%
+  select(SNP, ID, CHR.x, BP.x, A1.x, A2.x, BETA.x, P.x, BETA.y) # 936339 SNPs
+# write to txt file 
+write.table(list1, "/data/wenhua/dat1/list1_rsID.txt", sep = "\t", row.names = FALSE, col.names = TRUE)
+
+# PRS2(PD:-, SZ: -)
+list2 <- overlap %>%
+  filter(BETA.x < 0 & BETA.y < 0) %>%
+  select(SNP, ID, CHR.x, BP.x, A1.x, A2.x, BETA.x, P.x, BETA.y) # 1077779 SNPs
+# write to txt file 
+write.table(list2, "/data/wenhua/dat1/list2_rsID.txt", sep = "\t", row.names = FALSE, col.names = TRUE)
+
+# PRS3(PD:+, SZ: -)
+list3 <- overlap %>%
+  filter(BETA.x > 0 & BETA.y < 0) %>%
+  select(SNP, ID, CHR.x, BP.x, A1.x, A2.x, BETA.x, P.x, BETA.y) # 1084913 SNPs
+# write to txt file 
+write.table(list3, "/data/wenhua/dat1/list3_rsID.txt", sep = "\t", row.names = FALSE, col.names = TRUE)
+
+# PRS4(PD:-, SZ: +)
+list4 <- overlap %>%
+  filter(BETA.x < 0 & BETA.y > 0) %>%
+  select(SNP, ID, CHR.x, BP.x, A1.x, A2.x, BETA.x, P.x, BETA.y) # 931891 SNPs
+# write to txt file 
+write.table(list4, "/data/wenhua/dat1/list4_rsID.txt", sep = "\t", row.names = FALSE, col.names = TRUE)
+
+# PRS5, concordant
+# list 5, Stack the rows of the two data frames
+list5 <- rbind(list1, list2) # 2014118 SNPs
+write.table(list5, "/data/wenhua/dat1/list5_rsID.txt", sep = "\t", row.names = FALSE, col.names = TRUE)
+
+# PRS6, discordant
+list6 <- rbind(list3, list4) # 2016804 SNPs
+write.table(list6, "/data/wenhua/dat1/list6_rsID.txt", sep = "\t", row.names = FALSE, col.names = TRUE)
+
+# PRS calculation with PRSice
+# prepare file(Tuebingen_nonGWAS.bed,Tuebingen_nonGWAS.bim, Tuebingen_nonGWAS.fam, Tuebingen_nonGWAS_COV as covariate file(sex,age, PC1-PC4), SNPlist from above)
+# PRSice installation
+# format file, remove quotation mark(linux version)
+sed -i 's/"//g' SNPlist/list1.txt
+sed -i '' 's/"//g' SNPlist/list1_rsID.txt(mac version)
+# look at file
+head SNPlist/list1.txt
+#PRS calculation(in linux)
+Rscript PRSice.R --dir . --prsice ./PRSice_linux --base SNPlist/list1.txt --snp ID --A1 A1.x --A2 A2.x --stat BETA.x --beta --pvalue P.x --target Tuebingen_nonGWAS --thread 1 --binary-target T --clump-kb 1000000 --clump-r2 0.1 --clump-p 1 --cov Tuebingen_nonGWAS_COV --cov-col Sex,Age,PC1,PC2,PC3,PC4 --print-snp --prevalence 0.005 --fastscore --bar-levels 0.05 --out list1
+# mac version
+Rscript PRSice_mac/PRSice.R --dir . --prsice ./PRSice_mac/PRSice_mac --base SNPlist/list7_rsID.txt --snp SNP --A1 A1.x --A2 A2.x --stat BETA.y --beta --pvalue P.y --target Tuebingen_nonGWAS --thread 1 --binary-target T --clump-kb 1000000 --clump-r2 0.1 --clump-p 1 --cov Tuebingen_nonGWAS_COV.copy --cov-col Sex,Age,PC1,PC2,PC3,PC4 --print-snp --prevalence 0.005 --fastscore --bar-levels 0.05 --out result_SZ/list7
